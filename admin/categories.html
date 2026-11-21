@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Categories · Admin · OnlineShop</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body data-page="categories" data-root="../">
+  <header id="app-header"></header>
+
+  <main class="container">
+    <div class="page-head">
+      <div><h1>Categories</h1><p class="muted">Group your products. Deactivated categories are hidden from customers.</p></div>
+    </div>
+
+    <div class="card">
+      <form id="addForm" class="toolbar" style="margin:0; align-items:flex-start" novalidate>
+        <div class="field grow" style="margin:0">
+          <input type="text" id="newName" placeholder="New category name, e.g. Home & Kitchen" maxlength="40" aria-label="New category name">
+          <div class="field-error"></div>
+        </div>
+        <button type="submit" class="btn btn-primary" id="addBtn">Add category</button>
+      </form>
+    </div>
+
+    <div class="toolbar" style="margin-top:20px">
+      <input type="search" id="search" class="grow" placeholder="Search categories…" aria-label="Search categories">
+      <span class="result-info" id="resultInfo"></span>
+    </div>
+    <div id="list"></div>
+    <div class="pager" id="pager"></div>
+  </main>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/core/util.js"></script>
+  <script src="../js/core/auth.js"></script>
+  <script src="../js/core/api.js"></script>
+  <script src="../js/core/ui.js"></script>
+  <script src="../js/services/catalog.js"></script>
+  <script src="../js/pages/admin-categories.js"></script>
+</body>
+</html>

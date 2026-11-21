@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reports · Admin · OnlineShop</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body data-page="reports" data-root="../">
+  <header id="app-header"></header>
+
+  <main class="container">
+    <div class="page-head">
+      <div><h1>Reports</h1><p class="muted" id="rangeText"></p></div>
+    </div>
+
+    <div class="card no-print">
+      <form id="rangeForm" class="toolbar" style="margin:0; align-items:flex-end" novalidate>
+        <div class="field" style="margin:0"><label for="from">From date</label><input type="date" id="from"></div>
+        <div class="field" style="margin:0"><label for="to">To date</label><input type="date" id="to"></div>
+        <button type="submit" class="btn btn-primary">Apply</button>
+        <button type="button" class="btn btn-ghost" id="printBtn">Print</button>
+        <span class="field-error" id="rangeError"></span>
+      </form>
+    </div>
+
+    <div class="tabs no-print" style="margin-top:20px">
+      <button class="tab active" data-tab="customers">Customer reports</button>
+      <button class="tab" data-tab="inventory">Inventory reports</button>
+      <button class="tab" data-tab="sales">Sales reports</button>
+    </div>
+
+    <section id="tab-customers" class="tab-panel"></section>
+    <section id="tab-inventory" class="tab-panel hidden"></section>
+    <section id="tab-sales" class="tab-panel hidden"></section>
+  </main>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/core/util.js"></script>
+  <script src="../js/core/auth.js"></script>
+  <script src="../js/core/api.js"></script>
+  <script src="../js/core/ui.js"></script>
+  <script src="../js/services/catalog.js"></script>
+  <script src="../js/services/customers.js"></script>
+  <script src="../js/services/cart.js"></script>
+  <script src="../js/services/email.js"></script>
+  <script src="../js/services/orders.js"></script>
+  <script src="../js/services/reports.js"></script>
+  <script src="../js/pages/admin-reports.js"></script>
+</body>
+</html>

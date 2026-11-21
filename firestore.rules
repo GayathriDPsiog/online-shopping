@@ -1,0 +1,68 @@
+rules_version = '2';
+
+// ============================================================
+// Firestore Security Rules — the REAL protection of the app.
+// Paste into Firebase console → Firestore → Rules → Publish.
+// Editing this file alone does NOT change Firebase.
+// ============================================================
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Must match CONFIG.ADMIN_EMAIL in js/config.js
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == 'admin@example.com';
+    }
+    function signedIn() {
+      return request.auth != null;
+    }
+    function changedOnly(keys) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
+    }
+
+    // Anyone may browse categories; only the admin changes them
+    match /categories/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Anyone may browse products; only the admin creates/edits/deletes.
+    // A signed-in customer may only DECREASE qty (that is what a purchase does).
+    match /products/{id} {
+      allow read: if true;
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin()
+        || (signedIn()
+            && changedOnly(['qty'])
+            && request.resource.data.qty is int
+            && request.resource.data.qty >= 0
+            && request.resource.data.qty < resource.data.qty);
+    }
+
+    // A customer reads and edits only their own profile (doc id = their uid).
+    // They can change name, mobile, and increase creditUsed up to their limit (purchases).
+    // Only the admin changes creditLimit or active.
+    match /customers/{uid} {
+      allow read: if isAdmin() || (signedIn() && request.auth.uid == uid);
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.creditLimit == 0
+        && request.resource.data.creditUsed == 0
+        && request.resource.data.active == true;
+      // Credit limit can never exceed ₹1000 (100000 paise), even for the admin
+      allow update: if (isAdmin() && request.resource.data.creditLimit <= 100000)
+        || (signedIn() && request.auth.uid == uid
+            && changedOnly(['name', 'mobile', 'creditUsed'])
+            && request.resource.data.creditUsed >= resource.data.creditUsed
+            && request.resource.data.creditUsed <= resource.data.creditLimit);
+      allow delete: if isAdmin();
+    }
+
+    // Customers create orders for themselves (if not blocked) and read only their own.
+    match /orders/{id} {
+      allow read: if isAdmin() || (signedIn() && resource.data.customerId == request.auth.uid);
+      allow create: if signedIn()
+        && request.resource.data.customerId == request.auth.uid
+        && get(/databases/$(database)/documents/customers/$(request.auth.uid)).data.active == true;
+      allow update, delete: if isAdmin();
+    }
+  }
+}
