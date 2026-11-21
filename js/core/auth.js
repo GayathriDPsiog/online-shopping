@@ -40,19 +40,15 @@ const Auth = (function () {
     return 'Something went wrong. Please try again.';
   }
 
+  // All Auth REST calls go through Axios (JSON in, JSON out)
   async function call(endpoint, body) {
     try {
-      return await $.ajax({
-        url: ID_URL + endpoint + '?key=' + CONFIG.API_KEY,
-        method: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify(body),
-        dataType: 'json'
-      });
-    } catch (xhr) {
-      const code = xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error.message : '';
-      if (xhr.status === 0) throw new Error('No internet connection.');
-      throw new Error(friendly(code));
+      const res = await axios.post(ID_URL + endpoint + '?key=' + CONFIG.API_KEY, body);
+      return res.data;
+    } catch (e) {
+      if (!e.response) throw new Error('No internet connection.');
+      const data = e.response.data;
+      throw new Error(friendly(data && data.error ? data.error.message : ''));
     }
   }
 
@@ -82,13 +78,10 @@ const Auth = (function () {
 
   // Tokens expire after 1 hour; get a new one with the refresh token
   async function refresh(s) {
-    const r = await $.ajax({
-      url: TOKEN_URL + '?key=' + CONFIG.API_KEY,
-      method: 'POST',
-      contentType: 'application/x-www-form-urlencoded',
-      data: { grant_type: 'refresh_token', refresh_token: s.refreshToken },
-      dataType: 'json'
-    });
+    // This endpoint expects form data; Axios sends URLSearchParams as application/x-www-form-urlencoded
+    const res = await axios.post(TOKEN_URL + '?key=' + CONFIG.API_KEY,
+      new URLSearchParams({ grant_type: 'refresh_token', refresh_token: s.refreshToken }));
+    const r = res.data;
     s.idToken = r.id_token;
     s.refreshToken = r.refresh_token;
     s.expiresAt = Date.now() + (parseInt(r.expires_in, 10) - 60) * 1000;

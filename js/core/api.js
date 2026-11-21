@@ -1,9 +1,20 @@
 // ============================================================
 // api.js — the ONLY file that talks to Firestore.
 // Converts normal JS objects <-> Firestore's typed JSON and
-// wraps every REST call in $.ajax.
+// sends every REST call with Axios.
 // ============================================================
 const Api = (function () {
+
+  // One Axios instance for all Firestore calls
+  const http = axios.create({ headers: { 'Content-Type': 'application/json' } });
+
+  // REQUEST INTERCEPTOR: runs before EVERY request and attaches the login token,
+  // refreshing it first if it has expired. Pages never handle tokens themselves.
+  http.interceptors.request.use(async function (config) {
+    const token = await Auth.getToken();
+    if (token) config.headers.Authorization = 'Bearer ' + token;
+    return config;
+  });
 
   // ---------- JS value → Firestore typed value ----------
   function toValue(v) {
@@ -54,37 +65,30 @@ const Api = (function () {
   }
 
   // ---------- Errors ----------
-  function toError(xhr) {
-    let body = xhr.responseJSON;
+  // Axios rejects for any 4xx/5xx status; err.response holds the server's reply
+  function toError(axiosErr) {
+    const status = axiosErr.response ? axiosErr.response.status : 0;
+    let body = axiosErr.response ? axiosErr.response.data : null;
     if (Array.isArray(body)) body = body[0];
     const info = body && body.error ? body.error : {};
     let message = info.message || 'Request failed.';
-    if (xhr.status === 0) message = 'No internet connection, or the request was blocked.';
-    else if (xhr.status === 401 || xhr.status === 403) message = 'You do not have permission for this action. Try signing in again.';
-    else if (xhr.status === 404) message = 'Not found.';
+    if (status === 0) message = 'No internet connection, or the request was blocked.';
+    else if (status === 401 || status === 403) message = 'You do not have permission for this action. Try signing in again.';
+    else if (status === 404) message = 'Not found.';
     const err = new Error(message);
-    err.status = xhr.status;
+    err.status = status;
     err.code = info.status || '';   // e.g. FAILED_PRECONDITION, ALREADY_EXISTS
     err.raw = info.message;
     return err;
   }
 
-  // ---------- Core request (adds the login token automatically) ----------
+  // ---------- Core request (token added by the interceptor above) ----------
   async function request(method, url, body) {
-    const headers = {};
-    const token = await Auth.getToken();
-    if (token) headers.Authorization = 'Bearer ' + token;
     try {
-      return await $.ajax({
-        url: url,
-        method: method,
-        headers: headers,
-        contentType: body ? 'application/json' : undefined,
-        data: body ? JSON.stringify(body) : undefined,
-        dataType: 'json'
-      });
-    } catch (xhr) {
-      throw toError(xhr);
+      const res = await http.request({ method: method, url: url, data: body });
+      return res.data;          // Axios has already parsed the JSON
+    } catch (e) {
+      throw toError(e);
     }
   }
 

@@ -16,24 +16,19 @@ const Email = {
     const lines = order.items.map(function (i) {
       return i.title + '  x ' + i.qty + '  = ' + Util.inr(i.lineTotal);
     }).join('\n');
-    await $.ajax({
-      url: 'https://api.emailjs.com/api/v1.0/email/send',
-      method: 'POST',
-      contentType: 'application/json',
-      data: JSON.stringify({
-        service_id: CONFIG.EMAILJS.SERVICE_ID,
-        template_id: CONFIG.EMAILJS.TEMPLATE_ID,
-        user_id: CONFIG.EMAILJS.PUBLIC_KEY,
-        template_params: {
-          to_email: order.customerEmail,
-          to_name: order.customerName,
-          order_id: order.id,
-          order_date: Util.fmtDate(order.date),
-          pay_mode: order.payMode === 'credit' ? 'Credit' : 'Cash',
-          order_items: lines,
-          order_total: Util.inr(order.total)
-        }
-      })
+    await axios.post('https://api.emailjs.com/api/v1.0/email/send', {
+      service_id: CONFIG.EMAILJS.SERVICE_ID,
+      template_id: CONFIG.EMAILJS.TEMPLATE_ID,
+      user_id: CONFIG.EMAILJS.PUBLIC_KEY,
+      template_params: {
+        to_email: order.customerEmail,
+        to_name: order.customerName,
+        order_id: order.id,
+        order_date: Util.fmtDate(order.date),
+        pay_mode: order.payMode === 'credit' ? 'Credit' : 'Cash',
+        order_items: lines,
+        order_total: Util.inr(order.total)
+      }
     });
     return true;
   }

@@ -1,6 +1,6 @@
 # Online Shopping
 
-An e-commerce web app built with **HTML, CSS, JavaScript and jQuery (AJAX)**. The backend is **Firebase**: Authentication and Cloud Firestore, both called through their REST APIs. Order emails go through **EmailJS**, and the site is hosted on **GitHub Pages** with auto-deploy via **GitHub Actions**.
+An e-commerce web app built with **HTML, CSS, JavaScript and jQuery**, with **Axios** for all API calls (AJAX). jQuery handles the page (events, DOM); Axios handles HTTP requests, with a request interceptor that attaches the login token to every call. The backend is **Firebase**: Authentication and Cloud Firestore, both called through their REST APIs. Order emails go through **EmailJS**, and the site is hosted on **GitHub Pages** with auto-deploy via **GitHub Actions**.
 
 ## Features
 
@@ -31,7 +31,7 @@ cart.html, bill.html, orders.html, profile.html     ← customer pages
 admin/                                               ← admin pages
 css/style.css                                        ← all styles
 js/config.js                                         ← all settings (API key, admin email, limits)
-js/core/      api.js (Firestore REST), auth.js (Auth REST), ui.js, util.js
+js/core/      api.js (Firestore REST via Axios), auth.js (Auth REST via Axios), ui.js, util.js
 js/services/  catalog, customers, cart, orders, email, reports  ← business logic
 js/pages/     one script per page                                ← connects buttons to services
 firestore.rules                                      ← security rules (paste into Firebase)
